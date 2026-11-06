@@ -99,17 +99,22 @@ The included `render.yaml` defines one web service for the UI and API and a Post
 
 Render's free web service can sleep after inactivity, and a free Render Postgres database expires after 30 days. That's suitable for a short demo; keep a paid database or another persistent PostgreSQL database for a link and data that must remain available longer. Render's web service must bind to `0.0.0.0`; the Blueprint start command already does this. The UI is served by FastAPI, so no separate Vercel site or CORS setup is needed.
 
-## Deploy on Vercel instead
+## Deploy on Vercel as two services
 
-Vercel also supports this FastAPI app as a Python Function. The repo includes a Vercel entrypoint, Python 3.12 pin, root `requirements.txt`, and function file inclusion for the sample CSV. The frontend is mounted with FastAPI `StaticFiles`.
+The Vercel Services config deploys the static frontend and FastAPI backend independently under one Vercel project and domain:
 
-1. Push the project to GitHub, then import that repository in Vercel.
-2. Keep the project root as the Root Directory and use the detected FastAPI preset.
-3. Add a PostgreSQL database through Vercel Marketplace (for example Neon or Supabase). Configure its connection string as the Vercel environment variable `DATABASE_URL` for Production. The app cannot use its local SQLite database as durable Vercel storage.
-4. Optionally add `OPENAI_API_KEY` as an environment variable. Without it, demo mode remains available.
-5. Deploy, then check the project URL and `/api/v1/health`.
+- `biai-dealflow` serves `frontend/` publicly at `/`.
+- `backend` runs `backend.app.main:app` and receives public `/api/*` requests.
 
-Vercel reads [`pyproject.toml`](pyproject.toml) for the FastAPI entrypoint and [`vercel.json`](vercel.json) for the CSV bundled with the function. The generated UI and API use the same Vercel origin. Install dependencies from the root `requirements.txt`. Vercel supports FastAPI through its Python runtime and promotes FastAPI static mounts to its CDN; PostgreSQL must be an external persistent database. See the [FastAPI deployment guide](https://vercel.com/docs/frameworks/backend/fastapi) and [Vercel Marketplace storage](https://vercel.com/docs/marketplace-storage).
+The browser calls the backend through same-origin `/api/v1/...` paths, so the routing rewrite connects the two services and no service binding is needed. The backend requires a persistent PostgreSQL `DATABASE_URL`; local SQLite is only for development.
+
+1. Push the project to GitHub and import that repository in Vercel.
+2. Keep the repository root as the project root. Vercel uses [`vercel.json`](vercel.json) to build both services and route requests.
+3. Connect PostgreSQL through Vercel Marketplace (such as Neon or Supabase) and set `DATABASE_URL` for Production.
+4. Optionally set `OPENAI_API_KEY`. Without it, the backend uses deterministic demo mode.
+5. Deploy, then open the project URL and check `/api/v1/health` and `/api/v1/leads`.
+
+Vercel supports FastAPI services and a separate static service in one project. The root `requirements.txt`, Python version pin, FastAPI entrypoint, and CSV bundle rule are included. See the [Vercel Services guide](https://vercel.com/docs/services), [FastAPI deployment guide](https://vercel.com/docs/frameworks/backend/fastapi), and [Marketplace storage](https://vercel.com/docs/marketplace-storage).
 
 ## Known limitations
 
