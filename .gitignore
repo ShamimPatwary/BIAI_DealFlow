@@ -1,0 +1,10 @@
+.venv/
+.myvenv/
+.vercel/
+__pycache__/
+*.py[cod]
+.env
+backend/dealflow.db
+backend/*.db-shm
+backend/*.db-wal
+frontend/check.js

@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: biai-dealflow
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: APP_TIMEZONE
+        value: Asia/Dhaka
+      - key: AI_PROVIDER
+        value: openai
+      - key: DATABASE_URL
+        fromDatabase:
+          name: biai-dealflow-db
+          property: connectionString
+
+databases:
+  - name: biai-dealflow-db
+    databaseName: biai_dealflow
+    plan: free
