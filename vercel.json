@@ -3,7 +3,7 @@
   "services": {
     "biai-dealflow": {
       "root": "frontend/",
-      "framework": null,
+      "framework": "other",
       "outputDirectory": "."
     },
     "backend": {
